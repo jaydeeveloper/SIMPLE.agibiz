@@ -143,7 +143,7 @@ class API extends MY_BackendController {
             $respuesta->tramite = $tramite->toPublicArray();
         } else {
             $offset = $this->input->get('pageToken') ? 1 * base64_decode(urldecode($this->input->get('pageToken'))) : null;
-            $limit = ($this->input->get('maxResults') && $this->input->get('maxResults') <= 20) ? 1 * $this->input->get('maxResults') : 10;
+            $limit = ($this->input->get('maxResults') && $this->input->get('maxResults') <= 50) ? 1 * $this->input->get('maxResults') : 10;
 
             $query = Doctrine_Query::create()
                     ->from('Tramite t, t.Proceso.Cuenta c')
@@ -196,7 +196,7 @@ class API extends MY_BackendController {
 
             if ($recurso == 'tramites') {
                 $offset = $this->input->get('pageToken') ? 1 * base64_decode(urldecode($this->input->get('pageToken'))) : null;
-                $limit = ($this->input->get('maxResults') && $this->input->get('maxResults') <= 20) ? 1 * $this->input->get('maxResults') : 10;
+                $limit = ($this->input->get('maxResults') && $this->input->get('maxResults') <= 50) ? 1 * $this->input->get('maxResults') : 10;
 
                 $query = Doctrine_Query::create()
                         ->from('Tramite t, t.Proceso p')

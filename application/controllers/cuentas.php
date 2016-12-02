@@ -21,7 +21,22 @@ class Cuentas extends MY_Controller {
         
         $data['content'] = 'cuenta/editar';
         $data['title'] = 'Edita tu información';
-        $this->load->view('template', $data);
+        $config =Doctrine::getTable('CuentaHasConfig')->findOneByIdparAndCuentaId(1,Cuenta::cuentaSegunDominio()->id); 
+        if($config){
+           $config =Doctrine::getTable('Config')->findOneByIdAndIdparAndCuentaIdOrCuentaId($config->config_id,$config->idpar,Cuenta::cuentaSegunDominio()->id,0);
+           $nombre = $config->nombre;
+           if ($nombre=='default'){
+                $data['template_path'] = 'uploads/themes/default/';
+                $this->load->view('themes/default/template', $data);
+           } else {
+                $data['template_path'] = 'uploads/themes/'.Cuenta::cuentaSegunDominio()->id.'/'.$nombre.'/';
+                $this->load->view('themes/'.Cuenta::cuentaSegunDominio()->id.'/'.$nombre.'/template', $data);
+           }
+           
+        }else{
+           $data['template_path'] = 'uploads/themes/default/';
+           $this->load->view('themes/default/template', $data);
+        }
     }
     
     public function editar_form(){
@@ -63,7 +78,23 @@ class Cuentas extends MY_Controller {
         
         $data['content'] = 'cuenta/editar_password';
         $data['title'] = 'Edita tu información';
-        $this->load->view('template', $data);
+        
+        $config =Doctrine::getTable('CuentaHasConfig')->findOneByIdparAndCuentaId(1,Cuenta::cuentaSegunDominio()->id); 
+        if($config){
+           $config =Doctrine::getTable('Config')->findOneByIdAndIdparAndCuentaIdOrCuentaId($config->config_id,$config->idpar,Cuenta::cuentaSegunDominio()->id,0);
+           $nombre = $config->nombre;
+           if ($nombre=='default'){
+                $data['template_path'] = 'uploads/themes/default/';
+                $this->load->view('themes/default/template', $data);
+           } else {
+                $data['template_path'] = 'uploads/themes/'.Cuenta::cuentaSegunDominio()->id.'/'.$nombre.'/';
+                $this->load->view('themes/'.Cuenta::cuentaSegunDominio()->id.'/'.$nombre.'/template', $data);
+           }
+           
+        }else{
+           $data['template_path'] = 'uploads/themes/default/';
+           $this->load->view('themes/default/template', $data);
+        }
     }
     
     public function editar_password_form(){

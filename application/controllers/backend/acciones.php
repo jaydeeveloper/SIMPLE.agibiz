@@ -193,7 +193,39 @@ class Acciones extends MY_BackendController {
         
     }
     
+    public function exportar($accion_id)
+    {
 
+        $accion = Doctrine::getTable('Accion')->find($accion_id);
+
+        $json = $accion->exportComplete();
+
+        header("Content-Disposition: attachment; filename=\"".mb_convert_case(str_replace(' ','-',$accion->nombre),MB_CASE_LOWER).".simple\"");
+        header('Content-Type: application/json');
+        echo $json;
+
+    }
+    
+    public function importar()
+    {
+        try {
+            $file_path = $_FILES['archivo']['tmp_name'];
+            $proceso_id = $this->input->post('proceso_id');
+
+            if ($file_path && $proceso_id) {
+                $input = file_get_contents($_FILES['archivo']['tmp_name']);
+                $accion = Accion::importComplete($input, $proceso_id);
+                $accion->proceso_id = $proceso_id;            
+                $accion->save();            
+            } else {
+                die('No se especificó archivo o ID proceso');
+            }
+        } catch (Exception $ex) {
+            die('Código: '.$ex->getCode().' Mensaje: '.$ex->getMessage());
+        }
+        
+        redirect($_SERVER['HTTP_REFERER']);
+    }
 }
 
 /* End of file welcome.php */

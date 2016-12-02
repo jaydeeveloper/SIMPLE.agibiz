@@ -34,7 +34,8 @@ class Tramites extends MY_Controller {
         $perpage=50;
 
         if ($query) { 
-            $this->load->library('sphinxclient');            
+            $this->load->library('sphinxclient');
+            $this->sphinxclient->setServer ( $this->config->item ( 'sphinx_host' ), $this->config->item ( 'sphinx_port' ) );
             $this->sphinxclient->SetLimits($offset, 10000);
             $result = $this->sphinxclient->query(json_encode($query), 'tramites');                         
            
@@ -92,26 +93,59 @@ class Tramites extends MY_Controller {
         $data['title'] = 'Bienvenido';
         
         $data['links'] = $this->pagination->create_links(); 
-        $this->load->view('template', $data);
+        $config =Doctrine::getTable('CuentaHasConfig')->findOneByIdparAndCuentaId(1,Cuenta::cuentaSegunDominio()->id); 
+        if($config){
+           $config =Doctrine::getTable('Config')->findOneByIdAndIdparAndCuentaIdOrCuentaId($config->config_id,$config->idpar,Cuenta::cuentaSegunDominio()->id,0);
+           $nombre = $config->nombre;
+           if ($nombre=='default'){
+                $data['template_path'] = 'uploads/themes/default/';
+                $this->load->view('themes/default/template', $data);
+           } else {
+                $data['template_path'] = 'uploads/themes/'.Cuenta::cuentaSegunDominio()->id.'/'.$nombre.'/';
+                $this->load->view('themes/'.Cuenta::cuentaSegunDominio()->id.'/'.$nombre.'/template', $data);
+           }
+           
+        }else{
+           $data['template_path'] = 'uploads/themes/default/';
+           $this->load->view('themes/default/template', $data);
+        }
     }
 
     public function disponibles() {
-        $orderby=$this->input->get('orderby')?$this->input->get('orderby'):'nombre';
-        $direction=$this->input->get('direction')?$this->input->get('direction'):'asc';
+
+        //$orderby=$this->input->get('orderby')?$this->input->get('orderby'):'nombre';
+        //$direction=$this->input->get('direction')?$this->input->get('direction'):'asc';
         
-        $data['procesos']=Doctrine::getTable('Proceso')->findProcesosDisponiblesParaIniciar(UsuarioSesion::usuario()->id, Cuenta::cuentaSegunDominio(),$orderby,$direction);
+        $data['procesos']=Doctrine::getTable('Proceso')->findProcesosDisponiblesParaIniciar(UsuarioSesion::usuario()->id, Cuenta::cuentaSegunDominio(),'nombre','asc');
         
-        $data['orderby']=$orderby;
-        $data['direction']=$direction;
+        //$data['orderby']=$orderby;
+        //$data['direction']=$direction;
         $data['sidebar']='disponibles';
         $data['content'] = 'tramites/disponibles';
         $data['title'] = 'Trámites disponibles a iniciar';
-        $this->load->view('template', $data);
+
+        $config =Doctrine::getTable('CuentaHasConfig')->findOneByIdparAndCuentaId(1,Cuenta::cuentaSegunDominio()->id); 
+        if($config){
+           $config =Doctrine::getTable('Config')->findOneByIdAndIdparAndCuentaIdOrCuentaId($config->config_id,$config->idpar,Cuenta::cuentaSegunDominio()->id,0);
+           $nombre = $config->nombre;
+           if ($nombre=='default'){
+                $data['template_path'] = 'uploads/themes/default/';
+                $this->load->view('themes/default/template', $data);
+           } else {
+                $data['template_path'] = 'uploads/themes/'.Cuenta::cuentaSegunDominio()->id.'/'.$nombre.'/';
+                $this->load->view('themes/'.Cuenta::cuentaSegunDominio()->id.'/'.$nombre.'/template', $data);
+           }
+           
+        }else{
+           $data['template_path'] = 'uploads/themes/default/';
+           $this->load->view('themes/default/template', $data);
+        }
     }
 
     public function iniciar($proceso_id) {
         $proceso=Doctrine::getTable('Proceso')->find($proceso_id);
-        
+        //echo UsuarioSesion::usuario()->id;
+        //exit;
         if(!$proceso->canUsuarioIniciarlo(UsuarioSesion::usuario()->id)){
             echo 'Usuario no puede iniciar este proceso';
             exit;

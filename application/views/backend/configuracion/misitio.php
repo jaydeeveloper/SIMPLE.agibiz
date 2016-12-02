@@ -35,6 +35,8 @@
                         }
                     });
                 </script>
+                <br/><br/>
+                <label class="checkbox"><input name="descarga_masiva" value="1" type="checkbox" <?= $cuenta->descarga_masiva ? 'checked' : '' ?>>Habilitar descarga masiva</label>
                 <div class="form-actions">
                     <button class="btn btn-primary" type="submit">Guardar</button>
                     <a class="btn" href="<?=site_url('backend/configuracion/usuarios')?>">Cancelar</a>

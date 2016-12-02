@@ -26,6 +26,11 @@ class Seguimiento extends MY_BackendController {
 		
 		if (UsuarioBackendSesion::usuario ()->cuenta_id != $proceso->cuenta_id) {
 			echo 'Usuario no tiene permisos';
+			exit;
+		}
+
+		if(!is_null(UsuarioBackendSesion::usuario()->procesos) && !in_array($proceso_id,explode(',',UsuarioBackendSesion::usuario()->procesos))){
+			echo 'Usuario no tiene permisos para el seguimiento del tramite';
 			exit ();
 		}
 		
@@ -108,6 +113,11 @@ groupBy ( 't.id' )->orderBy ( $order . ' ' . $direction )->limit ( $per_page )->
 	}
 	public function ver($tramite_id) {
 		$tramite = Doctrine::getTable ( 'Tramite' )->find ( $tramite_id );
+
+		if(!is_null(UsuarioBackendSesion::usuario()->procesos) && !in_array($tramite->Proceso->id,explode(',',UsuarioBackendSesion::usuario()->procesos))){
+			echo 'Usuario no tiene permisos para ver el tramite';
+			exit;
+		}
 		
 		if (UsuarioBackendSesion::usuario ()->cuenta_id != $tramite->Proceso->cuenta_id) {
 			echo 'No tiene permisos para hacer seguimiento a este tramite.';
@@ -141,6 +151,11 @@ groupBy ( 't.id' )->orderBy ( $order . ' ' . $direction )->limit ( $per_page )->
 	public function ver_etapa($etapa_id, $secuencia = 0) {
 		$etapa = Doctrine::getTable ( 'Etapa' )->find ( $etapa_id );
 		$paso = $etapa->getPasoEjecutable ( $secuencia );
+
+		if(!is_null(UsuarioBackendSesion::usuario()->procesos) && !in_array($etapa->Tramite->Proceso->id,explode(',',UsuarioBackendSesion::usuario()->procesos))){
+			echo 'Usuario no tiene permisos para ver el tramite';
+			exit;
+		}
 		
 		if (UsuarioBackendSesion::usuario ()->cuenta_id != $etapa->Tramite->Proceso->cuenta_id) {
 			echo 'No tiene permisos para hacer seguimiento a este tramite.';
@@ -184,6 +199,11 @@ groupBy ( 't.id' )->orderBy ( $order . ' ' . $direction )->limit ( $per_page )->
     	if ($this->form_validation->run () == TRUE) {
     			
 			$tramite = Doctrine::getTable ( 'Tramite' )->find ( $tramite_id );
+
+			if(!is_null(UsuarioBackendSesion::usuario()->procesos) && !in_array($tramite->Proceso->id,explode(',',UsuarioBackendSesion::usuario()->procesos))){
+				echo 'Usuario no tiene permisos';
+				exit;
+			}
 		
 			if (UsuarioBackendSesion::usuario ()->cuenta_id != $tramite->Proceso->cuenta_id) {
 				echo 'No tiene permisos para hacer seguimiento a este tramite.';
@@ -241,6 +261,11 @@ groupBy ( 't.id' )->orderBy ( $order . ' ' . $direction )->limit ( $per_page )->
 
 
 			$proceso = Doctrine::getTable ( 'Proceso' )->find ( $proceso_id );
+
+			if(!is_null(UsuarioBackendSesion::usuario()->procesos) && !in_array($proceso_id,explode(',',UsuarioBackendSesion::usuario()->procesos))){
+				echo 'Usuario no tiene permisos para el seguimiento del tramite';
+				exit;
+			}
 			
 			if (UsuarioBackendSesion::usuario ()->cuenta_id != $proceso->cuenta_id) {
 				echo 'No tiene permisos para hacer seguimiento a este tramite.';

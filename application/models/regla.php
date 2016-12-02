@@ -110,30 +110,18 @@ class Regla {
                         
                         if(!is_string($dato_almacenado)){
                             $valor_dato= json_encode($dato_almacenado);
-                            /* Comunas e instituciones */
-                            $valor_dato= json_decode($valor_dato,true);
-                            if(count($valor_dato) > 1){
-                                $i = 0;
-                                foreach ($valor_dato as $key => $value) {
-                                    if($i==1){
-                                        $valor_dato = $value;
-                                    }
-                                    $i++;
-                                }
-                            }else{
-                                $valor_dato= json_encode($dato_almacenado);
-                            }
-                            /* Fin comunas e instituciones */
+
                             if($evaluar == true){
-                                /* Grilla */
+                                //Grilla
+                                $etapa = Doctrine::getTable('Etapa')->find($etapa_id);
                                 $result = Doctrine_Query::create()
-                                                    ->from("Campo")
-                                                    ->where('nombre=?',$nombre_dato)
-                                                    ->andWhere('tipo = "grid"')
+                                                    ->select('c.tipo')
+                                                    ->from('Campo c, c.Formulario f, f.Proceso p')
+                                                    ->where('c.nombre=? AND p.id=?',array($nombre_dato,$etapa->Tarea->Proceso->id))
                                                     ->execute();
-                                if($result[0]->tipo){
+                                if($result[0]->tipo == 'grid'){
                                     $valor_dato = json_decode($valor_dato);
-                                    $tabla = '<table border="1" cellpadding="2" cellspacing="2"><thead>';
+                                    $tabla = '<table border="1" cellpadding="1" cellspacing="1"><thead>';
                                     foreach ($valor_dato as $key => $array) {
                                         if($key == 1){
                                             $tabla .= '</thead><tbody><tr>';
@@ -151,8 +139,19 @@ class Regla {
                                     }
                                     $tabla .= '</tbody></table>';
                                     $valor_dato = $tabla;
+                                //Fin grilla
+                                //Instituciones y comunas    
+                                }elseif ($result[0]->tipo == 'comunas' or $result[0]->tipo == 'instituciones_gob') {
+                                    $valor_dato= json_decode($valor_dato,true);
+                                    $i = 0;
+                                    foreach ($valor_dato as $key => $value) {
+                                        if($i==1){
+                                            $valor_dato = $value;
+                                        }
+                                        $i++;
+                                    }
                                 }
-                                /* Fin grilla */
+                                //Fin instituciones y comunas
                             }
                         }
                         else{

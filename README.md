@@ -7,6 +7,9 @@ SIMPLE (Sistema para la Implementación de Procesos Ligeramente Estandarizados) 
 ### Licencia
 Este software esta licenciado bajo la licencia BSD-3.
 
+### Roadmap
+https://trello.com/b/jlq22yiU/minsegpres-simple
+
 ### Ambiente de Ejecución
 Los usuarios deben ingresar mediante ambiente web, a través de la URL provista por el organismo.
 

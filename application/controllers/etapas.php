@@ -19,7 +19,8 @@ class Etapas extends MY_Controller {
         $resultotal="";
         
         if ($buscar) { 
-            $this->load->library('sphinxclient');            
+            $this->load->library('sphinxclient');
+            $this->sphinxclient->setServer ( $this->config->item ( 'sphinx_host' ), $this->config->item ( 'sphinx_port' ) );
             $this->sphinxclient->SetLimits(0, 10000);
             $result = $this->sphinxclient->query(json_encode($buscar), 'tramites');             
             if($result['total'] > 0 ){            
@@ -43,7 +44,22 @@ class Etapas extends MY_Controller {
         $data['sidebar'] = 'inbox';
         $data['content'] = 'etapas/inbox';
         $data['title'] = 'Bandeja de Entrada';
-        $this->load->view('template', $data);
+        $config =Doctrine::getTable('CuentaHasConfig')->findOneByIdparAndCuentaId(1,Cuenta::cuentaSegunDominio()->id); 
+        if($config){
+           $config =Doctrine::getTable('Config')->findOneByIdAndIdparAndCuentaIdOrCuentaId($config->config_id,$config->idpar,Cuenta::cuentaSegunDominio()->id,0);
+           $nombre = $config->nombre;
+           if ($nombre=='default'){
+                $data['template_path'] = 'uploads/themes/default/';
+                $this->load->view('themes/default/template', $data);
+           } else {
+                $data['template_path'] = 'uploads/themes/'.Cuenta::cuentaSegunDominio()->id.'/'.$nombre.'/';
+                $this->load->view('themes/'.Cuenta::cuentaSegunDominio()->id.'/'.$nombre.'/template', $data);
+           }
+           
+        }else{
+           $data['template_path'] = 'uploads/themes/default/';
+           $this->load->view('themes/default/template', $data);
+        }
     }
     
     public function sinasignar($offset=0) {                
@@ -62,7 +78,8 @@ class Etapas extends MY_Controller {
         $perpage=50;
         
         if ($buscar) { 
-            $this->load->library('sphinxclient');                        
+            $this->load->library('sphinxclient');
+            $this->sphinxclient->setServer ( $this->config->item ( 'sphinx_host' ), $this->config->item ( 'sphinx_port' ) );
             $this->sphinxclient->SetLimits($offset, 10000);
             $result = $this->sphinxclient->query(json_encode($buscar), 'tramites');             
             if($result['total'] > 0 ){            
@@ -168,7 +185,22 @@ class Etapas extends MY_Controller {
             $data['title'] = $etapa->Tarea->nombre;
             $template = $this->input->get('iframe') ? 'template_iframe' : 'template';
 
-            $this->load->view($template, $data);
+            $config =Doctrine::getTable('CuentaHasConfig')->findOneByIdparAndCuentaId(1,Cuenta::cuentaSegunDominio()->id); 
+            if($config){
+               $config =Doctrine::getTable('Config')->findOneByIdAndIdparAndCuentaIdOrCuentaId($config->config_id,$config->idpar,Cuenta::cuentaSegunDominio()->id,0);
+               $nombre = $config->nombre;
+               if ($nombre=='default'){
+                    $data['template_path'] = 'uploads/themes/default/';
+                    $this->load->view('themes/default/template', $data);
+               } else {
+                    $data['template_path'] = 'uploads/themes/'.Cuenta::cuentaSegunDominio()->id.'/'.$nombre.'/';
+                    $this->load->view('themes/'.Cuenta::cuentaSegunDominio()->id.'/'.$nombre.'/template', $data);
+               }
+               
+            }else{
+               $data['template_path'] = 'uploads/themes/default/';
+               $this->load->view('themes/default/template', $data);
+            }
         }
     }
 
@@ -320,7 +352,22 @@ class Etapas extends MY_Controller {
         $data['title'] = $etapa->Tarea->nombre;
         $template = $this->input->get('iframe') ? 'template_iframe' : 'template';
 
-        $this->load->view($template, $data);
+        $config =Doctrine::getTable('CuentaHasConfig')->findOneByIdparAndCuentaId(1,Cuenta::cuentaSegunDominio()->id); 
+        if($config){
+           $config =Doctrine::getTable('Config')->findOneByIdAndIdparAndCuentaIdOrCuentaId($config->config_id,$config->idpar,Cuenta::cuentaSegunDominio()->id,0);
+           $nombre = $config->nombre;
+           if ($nombre=='default'){
+                $data['template_path'] = 'uploads/themes/default/';
+                $this->load->view('themes/default/template', $data);
+           } else {
+                $data['template_path'] = 'uploads/themes/'.Cuenta::cuentaSegunDominio()->id.'/'.$nombre.'/';
+                $this->load->view('themes/'.Cuenta::cuentaSegunDominio()->id.'/'.$nombre.'/template', $data);
+           }
+           
+        }else{
+           $data['template_path'] = 'uploads/themes/default/';
+           $this->load->view('themes/default/template', $data);
+        }
     }
 
     public function ejecutar_fin_form($etapa_id) {
@@ -378,7 +425,158 @@ class Etapas extends MY_Controller {
         $data['sidebar'] = 'participados';
         $data['title'] = 'Historial - ' . $etapa->Tarea->nombre;
         $data['content'] = 'etapas/ver';
-        $this->load->view('template', $data);
+        $config =Doctrine::getTable('CuentaHasConfig')->findOneByIdparAndCuentaId(1,Cuenta::cuentaSegunDominio()->id); 
+        if($config){
+           $config =Doctrine::getTable('Config')->findOneByIdAndIdparAndCuentaIdOrCuentaId($config->config_id,$config->idpar,Cuenta::cuentaSegunDominio()->id,0);
+           $nombre = $config->nombre;
+           if ($nombre=='default'){
+                $data['template_path'] = 'uploads/themes/default/';
+                $this->load->view('themes/default/template', $data);
+           } else {
+                $data['template_path'] = 'uploads/themes/'.Cuenta::cuentaSegunDominio()->id.'/'.$nombre.'/';
+                $this->load->view('themes/'.Cuenta::cuentaSegunDominio()->id.'/'.$nombre.'/template', $data);
+           }
+           
+        }else{
+           $data['template_path'] = 'uploads/themes/default/';
+           $this->load->view('themes/default/template', $data);
+        }
+    }
+
+    public function descargar($tramites){
+        $data['tramites'] = $tramites;
+        $this->load->view ('etapas/descargar',$data);
+    }
+    
+    public function descargar_form(){
+        if(!Cuenta::cuentaSegunDominio()->descarga_masiva){
+            echo 'Servicio no tiene permisos para descargar.';
+            exit;
+        }
+
+        if(!UsuarioSesion::usuario()->registrado){
+            echo 'Usuario no tiene permisos para descargar.';
+            exit;
+        }
+        $tramites = $this->input->post('tramites');
+        $opcionesDescarga = $this->input->post('opcionesDescarga');
+        $tramites = explode(",",$tramites);
+        $ruta_documentos = 'uploads/documentos/';
+        $ruta_generados = 'uploads/datos/';
+        $ruta_tmp = 'uploads/tmp/';
+        $fecha = new DateTime ();
+        $fecha = date_format($fecha,"Y-m-d");
+
+        $tipoDocumento = "";
+        switch ($opcionesDescarga) {
+            case 'documento':
+                $tipoDocumento = 'documento';
+                break;
+            case 'dato':
+                $tipoDocumento = 'dato';
+                break;
+        }
+
+        //Recorriendo los trámites
+        $this->load->library('zip');
+        foreach ($tramites as $t){
+
+            if(empty($tipoDocumento)){
+                $files =Doctrine::getTable('File')->findByTramiteId($t);
+            }else{
+                $files =Doctrine::getTable('File')->findByTramiteIdAndTipo($t,$tipoDocumento);
+            }
+            if(count($files) > 0){
+                //Recorriendo los archivos
+                foreach ($files as $f) {
+                    $tr = Doctrine::getTable('Tramite')->find($t);
+                    $participado = $tr->usuarioHaParticipado(UsuarioSesion::usuario()->id);
+                    if(!$participado){
+                        echo 'Usuario no ha participado en el trámite.';
+                        exit;
+                    }
+                    $nombre_documento = $tr->id;
+                    $tramite_nro ='';
+                    foreach ($tr->getValorDatoSeguimiento() as $tra_nro){
+                        if($tra_nro->valor == $f->filename){
+                            $nombre_documento = $tra_nro->nombre;
+                        }
+                        if($tra_nro->nombre == 'tramite_ref'){
+                            $tramite_nro = $tra_nro->valor;
+                        }
+                    }
+                    if($f->tipo == 'documento' && !empty($nombre_documento)){
+                        $path = $ruta_documentos.$f->filename;
+                        $tramite_nro = $tramite_nro != '' ? $tramite_nro : $tr->Proceso->nombre;
+                        $tramite_nro = str_replace(" ","",$tramite_nro);
+                        $nombre_archivo = pathinfo($path, PATHINFO_FILENAME);
+                        $ext = pathinfo($path, PATHINFO_EXTENSION);
+                        $new_file = $ruta_tmp.$nombre_documento.".".$nombre_archivo.".".$tramite_nro.".".$ext;
+                        copy($path,$new_file);
+                        $this->zip->read_file($new_file);
+                        //Eliminación del archivo para no ocupar espacio en disco
+                        unlink($new_file);
+                    }elseif ($f->tipo == 'dato' && !empty($nombre_documento)){
+                        $path = $ruta_generados.$f->filename;
+                        $this->zip->read_file($path);
+                    }
+                }
+                if(count($tramites) > 1){
+                    $tr = Doctrine::getTable('Tramite')->find($t);
+                    $tramite_nro ='';
+                    foreach ($tr->getValorDatoSeguimiento() as $tra_nro){
+                        if($tra_nro->nombre == 'tramite_ref'){
+                            $tramite_nro = $tra_nro->valor;
+                        }
+                    }
+                    $tramite_nro = $tramite_nro != '' ? $tramite_nro : $tr->Proceso->nombre;
+                    $nombre = $fecha."_".$t."_".$tramite_nro;
+                    //creando un zip por cada trámite
+                    $this->zip->archive($ruta_tmp.$nombre.'.zip');
+                    $this->zip->clear_data();
+                }
+            }
+        }
+        if(count($tramites) > 1){
+            foreach ($tramites as $t){
+                $tr = Doctrine::getTable('Tramite')->find($t);
+                $tramite_nro ='';
+                foreach ($tr->getValorDatoSeguimiento() as $tra_nro){
+                   if($tra_nro->nombre == 'tramite_ref'){
+                        $tramite_nro = $tra_nro->valor;
+                    }                              
+                }                         
+                $tramite_nro = $tramite_nro != '' ? $tramite_nro : $tr->Proceso->nombre;
+                $nombre = $fecha."_".$t."_".$tramite_nro;
+                $this->zip->read_file($ruta_tmp.$nombre.'.zip');
+            }
+            
+            //Eliminando los archivos antes de descargar
+            foreach ($tramites as $t){;
+                $tr = Doctrine::getTable('Tramite')->find($t);
+                $tramite_nro ='';
+                foreach ($tr->getValorDatoSeguimiento() as $tra_nro){
+                   if($tra_nro->nombre == 'tramite_ref'){
+                        $tramite_nro = $tra_nro->valor;
+                    }                              
+                }                         
+                $tramite_nro = $tramite_nro != '' ? $tramite_nro : $tr->Proceso->nombre;
+                $nombre = $fecha."_".$t."_".$tramite_nro;
+                unlink($ruta_tmp.$nombre.'.zip');
+            }
+            $this->zip->download('tramites.zip');
+        }else{
+            $tr = Doctrine::getTable('Tramite')->find($tramites);
+            $tramite_nro ='';
+            foreach ($tr->getValorDatoSeguimiento() as $tra_nro){
+               if($tra_nro->nombre == 'tramite_ref'){
+                    $tramite_nro = $tra_nro->valor;
+                }                              
+            }                         
+            $tramite_nro = $tramite_nro != '' ? $tramite_nro : $tr->Proceso->nombre;
+            $nombre = $fecha."_".$t."_".$tramite_nro;
+            $this->zip->download($nombre.'.zip');
+        }
     }
 
 }

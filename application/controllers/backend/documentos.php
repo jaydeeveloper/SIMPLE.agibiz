@@ -184,7 +184,40 @@ class Documentos extends MY_BackendController {
         redirect('backend/documentos/listar/'.$proceso->id);
         
     }
+    
+    public function exportar($documento_id)
+    {
 
+        $documento = Doctrine::getTable('Documento')->find($documento_id);
+
+        $json = $documento->exportComplete();
+
+        header("Content-Disposition: attachment; filename=\"".mb_convert_case(str_replace(' ','-',$documento->nombre),MB_CASE_LOWER).".simple\"");
+        header('Content-Type: application/json');
+        echo $json;
+
+    }
+    
+    public function importar()
+    {
+        try {
+            $file_path = $_FILES['archivo']['tmp_name'];
+            $proceso_id = $this->input->post('proceso_id');
+
+            if ($file_path && $proceso_id) {
+                $input = file_get_contents($_FILES['archivo']['tmp_name']);
+                $documento = Documento::importComplete($input, $proceso_id);
+                $documento->proceso_id = $proceso_id;            
+                $documento->save();            
+            } else {
+                die('No se especificó archivo o ID proceso');
+            }
+        } catch (Exception $ex) {
+            die('Código: '.$ex->getCode().' Mensaje: '.$ex->getMessage());
+        }        
+
+        redirect($_SERVER['HTTP_REFERER']);
+    }
 }
 
 /* End of file welcome.php */

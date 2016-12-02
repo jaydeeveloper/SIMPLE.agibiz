@@ -14,7 +14,8 @@
     <li class="active"><a href="<?=site_url('backend/acciones/listar/'.$proceso->id)?>">Acciones</a></li>
 </ul>
 
-<a class="btn" href="#" onclick="return seleccionarAccion(<?=$proceso->id?>);"><i class="icon-file"></i> Nuevo</a>
+<a class="btn btn-success" href="#" onclick="return seleccionarAccion(<?=$proceso->id?>);"><i class="icon-white icon-file"></i> Nuevo</a>
+<a class="btn btn-default" href="#modalImportarAccion" data-toggle="modal" ><i class="icon-upload icon"></i> Importar</a>
 
 <table class="table">
     <thead>
@@ -30,12 +31,30 @@
             <td><?=$p->nombre?></td>
             <td><?=$p->tipo?></td>
             <td>
-                <a href="<?=site_url('backend/acciones/editar/'.$p->id)?>" class="btn"><i class="icon-edit"></i> Editar</a>
-                <a href="<?=site_url('backend/acciones/eliminar/'.$p->id)?>" class="btn" onclick="return confirm('¿Esta seguro que desea eliminar?')"><i class="icon-remove"></i> Eliminar</a>
+                <a href="<?=site_url('backend/acciones/editar/'.$p->id)?>" class="btn btn-primary"><i class="icon-white icon-edit"></i> Editar</a>
+                <a class="btn btn-default" href="<?=site_url('backend/acciones/exportar/'.$p->id)?>"><i class="icon icon-share"></i> Exportar</a>
+                <a href="<?=site_url('backend/acciones/eliminar/'.$p->id)?>" class="btn btn-danger" onclick="return confirm('¿Esta seguro que desea eliminar?')"><i class="icon-white icon-trash"></i> Eliminar</a>
             </td>
         </tr>
         <?php endforeach; ?>
     </tbody>
 </table>
 
-<div class="modal hide fade" id="modal"></div>
+<div id="modalImportarAccion" class="modal hide fade">
+    <form method="POST" enctype="multipart/form-data" action="<?=site_url('backend/acciones/importar')?>">
+    <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+        <h3>Importar Accion</h3>
+    </div>
+    <div class="modal-body">
+        <p>Cargue a continuación el archivo .simple donde exportó su acción.</p>
+        <input type="file" name="archivo" />
+        <input type="hidden" name="proceso_id" value="<?= $proceso->id ?>" />
+    </div>
+    <div class="modal-footer">
+        <button class="btn" data-dismiss="modal" aria-hidden="true">Cerrar</button>
+        <button type="submit" class="btn btn-primary">Importar</button>
+    </div>
+    </form>
+</div>
+<div id="modal" class="modal hide fade"></div>

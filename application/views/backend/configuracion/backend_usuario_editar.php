@@ -1,3 +1,34 @@
+<script>
+    $(document).ready(function(){
+        
+        $("#rol option").on("click",function() {
+            var foo = [];
+            $('#rol :selected').each(function(i, selected){ 
+              foo.push($.trim($(selected).text()));
+            });
+            if (inArray("reportes", foo)) {
+                $("#div_procesos").show();
+            } else {
+                $("#div_procesos").hide();
+            }
+        });
+
+        function inArray(needle, haystack) {
+            var length = haystack.length;
+            for(var i = 0; i < length; i++) {
+                if(haystack[i] == needle){
+                    return true
+                }else if(haystack[i] == "gestion"){
+                    return true
+                }else if(haystack[i] == "seguimiento"){
+                    return true
+                }
+            }
+            return false;
+        }
+    });
+</script>
+
 <div class="row-fluid">
 
     <div class="span3">
@@ -36,7 +67,7 @@
 
                     $valores= isset($usuario->rol) ? explode(",", $usuario->rol) : '';
                 ?>         
-                <select name="rol[]"  class="input-xxlarge" multiple>
+                <select id="rol" name="rol[]"  class="input-xxlarge" multiple>
                     <?php  
                         for($o=0; $o<$longitud; $o++){ 
                     ?>
@@ -45,6 +76,23 @@
                         } 
                     ?>
                 </select>
+
+                <?php if(isset($usuario) && (count(explode(",",$usuario->procesos)) > 1 or in_array('seguimiento', explode(",", $usuario->rol)) or in_array('gestion', explode(",", $usuario->rol)) or in_array('reportes', explode(",", $usuario->rol)) )): ?>
+                <div id="div_procesos" style="display: block">
+                <?php else: ?>
+                <div id="div_procesos" style="display: none">
+                <?php endif; ?>
+                <label>Procesos</label>
+                <select name="procesos[]" class="input-xxlarge" multiple>
+                    <?php
+                        $procesos_usuario = explode(",",$usuario->procesos);
+                        foreach ($procesos as $p) {
+                    ?>
+                            <option value="<?= $p->id ?>"<?= in_array($p->id, $procesos_usuario) ? 'selected':''?> > <?= $p->nombre ?> </option>                    
+                <?php } ?>
+                </select>
+                </div>
+
                 <div class="help-block">
                     <ul>
                         <li>super: Tiene todos los privilegios del sistema.</li>

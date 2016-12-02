@@ -112,6 +112,7 @@
     <thead>
         <tr>
             <th><a href="<?= current_url() . '?query=' . $query . '&pendiente=' . $pendiente . '&created_at_desde=' . $created_at_desde . '&created_at_hasta=' . $created_at_hasta . '&updated_at_desde=' . $updated_at_desde . '&updated_at_hasta=' . $updated_at_hasta . '&order=id&direction=' . ($direction == 'asc' ? 'desc' : 'asc') ?>">Id <?= $order == 'id' ? $direction == 'asc' ? '<i class="icon-chevron-down"></i>' : '<i class="icon-chevron-up"></i>'  : '' ?></a></th>
+            <th>Asignado a.</th>
             <th>Ref.</th>
             <th>Nombre</th>
             <th><a href="<?= current_url() . '?query=' . $query . '&pendiente=' . $pendiente . '&created_at_desde=' . $created_at_desde . '&created_at_hasta=' . $created_at_hasta . '&updated_at_desde=' . $updated_at_desde . '&updated_at_hasta=' . $updated_at_hasta . '&order=pendiente&direction=' . ($direction == 'asc' ? 'desc' : 'asc') ?>">Estado <?= $order == 'pendiente' ? $direction == 'asc' ? '<i class="icon-chevron-down"></i>' : '<i class="icon-chevron-up"></i>'  : '' ?></a></th>
@@ -125,7 +126,11 @@
         <?php foreach ($tramites as $t): ?>
             <tr>
                 <td><?= $t->id ?></td>
-                
+                <?php 
+                    $etapa_id = $t->getUltimaEtapa()->id;
+                    $etapa = Doctrine::getTable ('Etapa')->find ($etapa_id);
+                ?>
+                <td><?= !$etapa->usuario_id ? 'Ninguno' : !$etapa->Usuario->registrado ? 'No registrado' : $etapa->Usuario->displayUsername() ?></td>
                <td class="name">  
                  <?php 
                       $tramite_nro ='';

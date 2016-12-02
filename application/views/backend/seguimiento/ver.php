@@ -12,8 +12,19 @@
 
 <script type="text/javascript">
     $(document).ready(function(){
+
+        <?php
+            $conector = 'Bezier';
+            $config =Doctrine::getTable('CuentaHasConfig')->findOneByIdparAndCuentaId(2,Cuenta::cuentaSegunDominio()->id);
+            if($config){
+                $config =Doctrine::getTable('Config')->findOneByIdAndIdpar($config->config_id,$config->idpar);
+                $conector = $config->nombre;
+            } 
+        ?>
+        var conector = '<?= $conector; ?>';
+
         tramiteId=<?= $tramite->id ?>;
-        drawFromModel(<?= $tramite->Proceso->getJSONFromModel() ?>,"<?=$tramite->Proceso->width?>","<?=$tramite->Proceso->height?>");
+        drawFromModel(<?= $tramite->Proceso->getJSONFromModel() ?>,"<?=$tramite->Proceso->width?>","<?=$tramite->Proceso->height?>",conector);
         drawSeguimiento(<?= json_encode($tramite->getTareasActuales()->toArray()) ?>,<?= json_encode($tramite->getTareasCompletadas()->toArray()) ?>, <?= json_encode($tramite->getTareasVencidas()->toArray()) ?>, <?= json_encode($tramite->getTareasVencenHoy()->toArray()) ?>);
     });
 

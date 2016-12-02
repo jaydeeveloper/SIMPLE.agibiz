@@ -5,7 +5,7 @@
 <table id="mainTable" class="table" title="Tabla con listado de trámites disponibles">
     <thead>
         <tr>
-            <th><a href="<?=current_url().'?orderby=nombre&amp;direction='.($direction=='asc'?'desc':'asc')?>">Nombre</a></th>
+            <th>Nombre</th>
             <th>Acciones</th>
         </tr>
     </thead>

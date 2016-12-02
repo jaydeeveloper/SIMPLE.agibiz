@@ -14,13 +14,14 @@ class SaferEval {
     function SaferEval() {
         $this->allowedCalls = array(
             // Function Handling Functions
-            //	'func_get_arg',		// Return an item from the argument list
-            //	'func_get_args',	// Returns an array comprising a function's argument list
-            //	'func_num_args',	// Returns the number of arguments passed to the function
-            //	'function_exists', 	// Return TRUE if the given function has been defined
+            //  'func_get_arg',     // Return an item from the argument list
+            //  'func_get_args',    // Returns an array comprising a function's argument list
+            //  'func_num_args',    // Returns the number of arguments passed to the function
+            //  'function_exists',  // Return TRUE if the given function has been defined
             // Mathematical functions
             'ceil', // Round fractions up
             'floor', // Round fractions down
+            'round', // Round float
             'fmod', // Returns the floating point remainder (modulo) of the division of the arguments
             'log', // Natural logarithm
             'mt_rand', // Generate a better random value
@@ -162,10 +163,13 @@ class SaferEval {
             'ucfirst', // Make a string's first character uppercase
             'ucwords', // Uppercase the first character of each word in a string
             'wordwrap', // Wraps a string to a given number of characters
+            'mb_strtoupper',
             //Date functions
             'date_create',
             'strftime',
             'strtotime',
+            'date',
+            'mktime',
             //Serializacion
             'json_encode',
             'json_decode',
@@ -174,7 +178,8 @@ class SaferEval {
             'false',
             'NULL',
             //Helpers
-            'matrix_to_html'
+            'matrix_to_html',
+            'numtoletras'
         );
         $this->allowedTokens = array(
             'T_AND_EQUAL', // assignment operators
@@ -187,7 +192,7 @@ class SaferEval {
             'T_BREAK', // break
             'T_CASE', // switch
             'T_CHARACTER', // ?
-            //	'T_COMMENT',			// comments
+            //  'T_COMMENT',            // comments
             'T_CONCAT_EQUAL', // assignment operators
             'T_CONSTANT_ENCAPSED_STRING', // string syntax
             'T_CONTINUE', // 
@@ -200,7 +205,7 @@ class SaferEval {
             'T_DO', // do..while
             'T_DOUBLE_ARROW', // array syntax
             'T_DOUBLE_CAST', // type-casting
-            //	'T_ECHO',                       //
+            //  'T_ECHO',                       //
             'T_ELSE', // else
             'T_ELSEIF', // elseif
             'T_EMPTY', // empty()
@@ -227,7 +232,7 @@ class SaferEval {
             'T_LOGICAL_OR', // logical operators
             'T_LOGICAL_XOR', // logical operators
             'T_MINUS_EQUAL', // assignment operators
-            //	'T_ML_COMMENT',			// comments (PHP 4 only)
+            //  'T_ML_COMMENT',         // comments (PHP 4 only)
             'T_MOD_EQUAL', // assignment operators
             'T_MUL_EQUAL', // assignment operators
             'T_NUM_STRING', // ?
@@ -256,8 +261,8 @@ class SaferEval {
             '/\$\W/', // Variable variables: any "$" which is not "$_" or "$alphanumeric"
             '/(\]|\})\s*\(/', // Variable functions: "] (" or "} ("
             '/\$\w\w*\s*\(/', // Variable functions: "$_ (" or "$alphanumeric"
-            //	'/\$\w\w*\s*(\/\/|\/\*)/',	// Comment after variable: "$alphanumeric //" or "$alphanumeric /*"
-            //	'/(\]|\})\s*\//',		// Comment after parentheses: "] /" or "} /"
+            //  '/\$\w\w*\s*(\/\/|\/\*)/',  // Comment after variable: "$alphanumeric //" or "$alphanumeric /*"
+            //  '/(\]|\})\s*\//',       // Comment after parentheses: "] /" or "} /"
         );
     }
 

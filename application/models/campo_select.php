@@ -2,15 +2,25 @@
 require_once('campo.php');
 class CampoSelect extends Campo {
     
-    protected function display($modo, $dato) {
-        $valor_default=json_decode($this->valor_default);
+    protected function display($modo, $dato, $etapa_id) {
+        if($etapa_id){
+            $etapa=Doctrine::getTable('Etapa')->find($etapa_id);
+            $regla=new Regla($this->valor_default);
+            $valor_default=$regla->getExpresionParaOutput($etapa->id);
+        }else{
+            $valor_default=json_decode($this->valor_default);
+        }
 
         $display = '<label class="control-label" for="'.$this->id.'">' . $this->etiqueta . (in_array('required', $this->validacion) ? '' : ' (Opcional)') . '</label>';
         $display.= '<div class="controls">';
         $display.='<select id="'.$this->id.'" class="select-semi-large" name="' . $this->nombre . '" ' . ($modo == 'visualizacion' ? 'readonly' : '') . ' data-modo="'.$modo.'">';
         $display.='<option value="">Seleccionar</option>';
         if($this->datos) foreach ($this->datos as $d) {
-            $display.='<option value="' . $d->valor . '" ' . ($dato && $d->valor == $dato->valor ? 'selected' : '') . '>' . $d->etiqueta . '</option>';
+            if($dato){
+                $display.='<option value="' . $d->valor . '" ' . ($dato && $d->valor == $dato->valor ? 'selected' : '') . '>' . $d->etiqueta . '</option>';
+            }else{
+                $display.='<option value="' . $d->valor . '" ' . ($d->valor == $valor_default ? 'selected' : '') . '>' . $d->etiqueta . '</option>';
+            }
         }
         $display.='</select>';
         if($this->ayuda)

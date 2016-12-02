@@ -1,12 +1,20 @@
 syntax: glob
-config.php
-database.php
+application/config/config.php
+application/config/database.php
+application/config/email.php
 nbproject
-uploads
-email.php
+uploads/datos
+uploads/documentos
+uploads/firmas
+uploads/logos
+uploads/logos_certificados
+uploads/timbres
 application/libraries/tcpdf/cache
 sphinx/index
 sphinx/run
 sphinx.conf
 searchd.log
 .idea
+composer.lock
+composer.phar
+vendor

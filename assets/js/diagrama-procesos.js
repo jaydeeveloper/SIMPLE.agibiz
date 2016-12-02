@@ -11,8 +11,10 @@ $(document).ready(function(){
         strokeStyle:"#333", 
         lineWidth:1.6
     };
+
+    //jsPlumb.Defaults.Connector=[ "Bezier", { curviness: 100 } ];
+    //jsPlumb.Defaults.Connector=[ "Bezier", { curviness: 100 } ];
     jsPlumb.Defaults.Endpoint= "Blank";
-    jsPlumb.Defaults.Connector=[ "Bezier", { curviness: 100 } ];
     jsPlumb.Defaults.HoverPaintStyle= {strokeStyle: "#FF00FF", lineWidth:3};
     jsPlumb.Defaults.ConnectionOverlays = [[ "Arrow", {
         location:1, 
@@ -21,15 +23,16 @@ $(document).ready(function(){
     } ]];
 });
 
-function drawFromModel(model,width,height){
-    //alert('dibujo');
+function drawFromModel(model,width,height,tipoconector){
     //Modificamos el titulo
     //$("#areaDibujo h1").text(model.nombre);
-    
+    //console.log(model);
+
     $("#draw").css("width",width).css("height",height);
     
     //limpiamos el canvas
     jsPlumb.reset();
+    
     $("#draw .box").remove();
     
     //Creamos los elementos
@@ -38,16 +41,23 @@ function drawFromModel(model,width,height){
     });
     
     //Creamos las conexiones
+    curvatura=0;
+    
+    if(tipoconector=='StateMachine'){
+        curvatura=10;
+    } 
+    if(tipoconector=='Bezier'){
+        curvatura=150;
+    }  
+    jsPlumb.Defaults.Connector=[ tipoconector, { curviness: curvatura }];
+    
     $(model.connections).each(function(i,c){
         drawConnection(c);
-        
-        
     });
-    
+        
     jsPlumb.draggable($("#draw .box"));
-    
     //setJSPlumbEvents();
-    
+
 }
 
 function drawFromModelUpdate(model,width,height){
@@ -72,9 +82,7 @@ function drawFromModelUpdate(model,width,height){
     
 }
 
-function drawConnection(c){
-    
-    //console.log(c);
+function drawConnection(c,tipoconector){
     /*
         var endpoint1, endpoint2;
         if(c.tipo=='evaluacion')
@@ -85,50 +93,28 @@ function drawConnection(c){
             endpoint1=paraleloEvaluacionEndpoint;
         else if(c.tipo=='union')
             endpoint2=unionEndpoint;
-            */
+     */       
         
         if(c.target!=null){     
-            var connection=jsPlumb.connect({
-                source: c.source,
-                target: c.target,
-                anchors: ["BottomCenter", "TopCenter"],
-                paintStyle: {
-                   strokeStyle: "#000000 ", 
-                   lineWidth:1
-               }
-                //endpoints:[endpoint1,endpoint2],
-                //parameters: {"id":c.id}
-            });
-            //console.log(connection);
+            
+                 var connection=jsPlumb.connect({
+                    source: $('#'+c.source),
+                    target: $('#'+c.target),
+                    anchors: ["BottomCenter", "TopCenter"],
+                    paintStyle: {
+                        strokeStyle: "#000000", 
+                        lineWidth:1
+                    }
+                    //parameters: {"id":c.id}
+                });
         }
-        
+
         if(c.tipo=="union")
             $("#draw #"+c.target).append('<div class="'+c.tipo+'"></div>');
         else
             $("#draw #"+c.source).append('<div class="conector '+c.tipo+'"></div>');
         
         if(!c.target)
-            $("#draw #"+c.source).append('<div class="'+(c.tipo=='secuencial'?'final-secuencial':'final')+'"></div>');
+            $("#draw #"+c.source).append('<div class="'+(c.tipo=='secuencial'?'final-secuencial':'final')+'"></div>'); 
+        
 }
-
-/*
-//Los eventos de jsPlumb los debo setear aca, ya que despues no se pueden setear con jquery live.
-function setJSPlumbEvents(){
-    var connections=jsPlumb.getConnections();
-    $(connections).each(function(i,c){
-        c.unbind();
-        c.bind("dblclick",dblClickConnectionEvent);
-        //$(c.endpoints).each(function(j,e){
-        //    e.unbind();
-        //    e.bind("dblclick",dblClickEndpointEvent);
-        //});
-    });
-}
-function dblClickConnectionEvent(connection){
-    return true;
-}
-
-function dblClickEndpointEvent(endpoint){
-    return true;
-}
-*/

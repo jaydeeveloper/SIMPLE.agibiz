@@ -39,6 +39,11 @@ class Reportes extends MY_BackendController {
         $proceso = Doctrine::getTable('Proceso')->find($proceso_id);
         $reportes=Doctrine_query::create()->from('Reporte r')->where('r.proceso_id = ?',$proceso_id)->orderBy('r.id desc')->execute();
 
+        if(!is_null(UsuarioBackendSesion::usuario()->procesos) && !in_array($proceso_id,explode(',',UsuarioBackendSesion::usuario()->procesos))){
+          echo 'Usuario no tiene permisos para ver los reportes';
+          exit;
+        }
+
         if ($proceso->cuenta_id != UsuarioBackendSesion::usuario()->cuenta_id) {
             echo 'Usuario no tiene permisos para listar los formularios de este proceso';
             exit;
@@ -57,6 +62,11 @@ class Reportes extends MY_BackendController {
     public function crear($proceso_id) {
         $proceso = Doctrine::getTable('Proceso')->find($proceso_id);
 
+        if(!is_null(UsuarioBackendSesion::usuario()->procesos) && !in_array($proceso_id,explode(',',UsuarioBackendSesion::usuario()->procesos))){
+          echo 'Usuario no tiene permisos';
+          exit;
+        }
+
         if ($proceso->cuenta_id != UsuarioBackendSesion::usuario()->cuenta_id || (!in_array('super',explode(",",UsuarioBackendSesion::usuario()->rol)) && !in_array('reportes',explode(",",UsuarioBackendSesion::usuario()->rol))) ) {
             echo 'No tiene permisos para crear este documento';
             exit;
@@ -72,6 +82,11 @@ class Reportes extends MY_BackendController {
 
     public function editar($reporte_id) {
         $reporte = Doctrine::getTable('Reporte')->find($reporte_id);
+
+        if(!is_null(UsuarioBackendSesion::usuario()->procesos) && !in_array($reporte->Proceso->id,explode(',',UsuarioBackendSesion::usuario()->procesos))){
+          echo 'Usuario no tiene permisos';
+          exit;
+        }
 
         if ($reporte->Proceso->cuenta_id != UsuarioBackendSesion::usuario()->cuenta_id) {
             echo 'No tiene permisos para editar este documento';
@@ -94,6 +109,11 @@ class Reportes extends MY_BackendController {
         } else {
             $reporte = new Reporte();
             $reporte->proceso_id = $this->input->post('proceso_id');
+        }
+
+        if(!is_null(UsuarioBackendSesion::usuario()->procesos) && !in_array($reporte->Proceso->id,explode(',',UsuarioBackendSesion::usuario()->procesos))){
+          echo 'Usuario no tiene permisos';
+          exit;
         }
 
         if ($reporte->Proceso->cuenta_id != UsuarioBackendSesion::usuario()->cuenta_id) {
@@ -123,6 +143,11 @@ class Reportes extends MY_BackendController {
     public function eliminar($reporte_id) {
         $reporte = Doctrine::getTable('Reporte')->find($reporte_id);
 
+        if(!is_null(UsuarioBackendSesion::usuario()->procesos) && !in_array($reporte->Proceso->id,explode(',',UsuarioBackendSesion::usuario()->procesos))){
+          echo 'Usuario no tiene permisos';
+          exit;
+        }
+
         if ($reporte->Proceso->cuenta_id != UsuarioBackendSesion::usuario()->cuenta_id) {
             echo 'Usuario no tiene permisos para eliminar este documento.';
             exit;
@@ -137,6 +162,11 @@ class Reportes extends MY_BackendController {
     public function ver($reporte_id){
     	
     	$reporte = Doctrine::getTable('Reporte')->find($reporte_id);
+
+      if(!is_null(UsuarioBackendSesion::usuario()->procesos) && !in_array($reporte->Proceso->id,explode(',',UsuarioBackendSesion::usuario()->procesos))){
+          echo 'Usuario no tiene permisos para ver el reporte';
+          exit;
+        }
     	
     	if ($reporte->Proceso->cuenta_id != UsuarioBackendSesion::usuario()->cuenta_id) {
     		echo 'Usuario no tiene permisos';

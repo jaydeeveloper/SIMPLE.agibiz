@@ -33,7 +33,9 @@ if (defined('ENVIRONMENT'))
 	switch (ENVIRONMENT)
 	{
 		case 'development':
-			error_reporting(E_ALL);
+			//error_reporting(E_ALL);
+			error_reporting(E_PARSE);
+			//ini_set('display_errors', 1);
 		break;
 	
 		case 'testing':
@@ -199,6 +201,7 @@ if (defined('ENVIRONMENT'))
  * And away we go...
  *
  */
+include_once './vendor/autoload.php';
 require_once BASEPATH.'core/CodeIgniter.php';
 
 /* End of file index.php */

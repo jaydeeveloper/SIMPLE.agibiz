@@ -1,20 +1,71 @@
 <?php
 
+use InoOicClient\Flow\Basic;
+use InoOicClient\Http;
+use InoOicClient\Client;
+use InoOicClient\Oic\Token;
+
 if (!defined('BASEPATH'))
     exit('No direct script access allowed');
 
 class Autenticacion extends MY_Controller {
 
+    protected $authConfig;
+
     public function __construct() {
         parent::__construct();
+        $this->authConfig = array(
+               'client_info' => array(
+                   'client_id' => Cuenta::cuentaSegunDominio()->client_id,
+                   'redirect_uri' => site_url('autenticacion/callback'),
+                   'authorization_endpoint' => 'https://www.claveunica.gob.cl/openid/authorize',
+                   'token_endpoint' => 'https://www.claveunica.gob.cl/openid/token',
+                   'user_info_endpoint' => 'https://www.claveunica.gob.cl/openid/userinfo',
+                   'authentication_info' => array(
+                       'method' => 'client_secret_post',
+                       'params' => array(
+                           'client_secret' => Cuenta::cuentaSegunDominio()->client_secret
+                       )
+                   )
+               )
+           );
     }
-
+    
     public function login_openid() {
+
+        /*
         $this->load->library('LightOpenID');
         $redirect = $this->input->get('redirect') ? $this->input->get('redirect') : site_url();
         $this->lightopenid->returnUrl = $redirect;
         $this->lightopenid->required = array('person/guid', 'namePerson/first', 'namePerson/last', 'namePerson/secondLast', 'contact/email');
         redirect($this->lightopenid->authUrl());
+        */
+
+        $redirectlogin = $this->input->get('redirect') ? $this->input->get('redirect') : site_url();
+        setcookie('redirectlogin', '', time()-3600);
+        setcookie("redirectlogin", $redirectlogin, time()+3600);
+        $flow = new Basic($this->authConfig);
+        if (! isset($_GET['code'])) {
+            try {
+                $uri = $flow->getAuthorizationRequestUri('openid nombre');
+                redirect($uri);
+            } catch (\Exception $e) {
+                printf("Exception during authorization URI creation: [%s] %s", get_class($e), $e->getMessage());
+            }
+        }
+    }
+
+     public function callback() {
+        $flow = new Basic($this->authConfig);
+        $token = $flow->getAccessToken($_GET['code']);
+        $infoPersonal = $flow->getUserInfo($token);
+        $rut = $infoPersonal['RUT'];
+        $rut = str_replace(".", "", $rut);
+        $CI = & get_instance();
+        $CI->session->set_flashdata('openidcallback',1);
+        $CI->session->set_flashdata('rut',$rut);
+        $redirectlogin = $_COOKIE['redirectlogin'];
+        redirect($redirectlogin);
     }
 
     public function login_form() {
@@ -151,7 +202,7 @@ class Autenticacion extends MY_Controller {
         $usuario_input=new Usuario();
         $usuario_input->reset_token=$reset_token;
         
-        if($usuario->reset_token!=$usuario_input->reset_token){
+        if(!is_null($usuario->reset_token) or $usuario->reset_token!=$usuario_input->reset_token or is_array($reset_token)){
             echo 'Token incorrecto';
             exit;
         }
@@ -179,7 +230,7 @@ class Autenticacion extends MY_Controller {
         $usuario_input=new Usuario();
         $usuario_input->reset_token=$reset_token;
         
-        if($usuario->reset_token!=$usuario_input->reset_token){
+        if(!is_null($usuario->reset_token) or $usuario->reset_token!=$usuario_input->reset_token or is_array($reset_token)){
             echo 'Token incorrecto';
             exit;
         }

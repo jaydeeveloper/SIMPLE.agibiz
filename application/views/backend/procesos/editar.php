@@ -122,7 +122,20 @@
 <script type="text/javascript">
     $(document).ready(function(){
         procesoId=<?= $proceso->id ?>;
-        drawFromModel(<?= $proceso->getJSONFromModel()?>,"<?=$proceso->width?>","<?=$proceso->height?>");
+
+        <?php
+            $conector = 'Bezier';
+            $config =Doctrine::getTable('CuentaHasConfig')->findOneByIdparAndCuentaId(2,Cuenta::cuentaSegunDominio()->id);
+            if($config){
+                $config =Doctrine::getTable('Config')->findOneByIdAndIdpar($config->config_id,$config->idpar);
+                $conector = $config->nombre;
+            } 
+        ?>
+
+        var conector = '<?= $conector; ?>';
+        
+        drawFromModel(<?= $proceso->getJSONFromModel()?>,"<?=$proceso->width?>","<?=$proceso->height?>",conector);
+        jsPlumb.repaintEverything();
     });
     
 </script>

@@ -30,12 +30,15 @@ class UsuarioSesion {
 
     public static function force_login() {
         $CI = & get_instance();
-
+        if($CI->session->flashdata('openidcallback')) {
+            self::login_open_id();
+        }
+        /*
         $CI->load->library('LightOpenID');
         if ($CI->lightopenid->mode == 'id_res') {
             self::login_open_id();
         }
-
+        */
         if (!self::usuario()) {
             //Creo un usuario no registrado
             $usuario = new Usuario();
@@ -98,7 +101,10 @@ class UsuarioSesion {
     }
 
     private static function login_open_id() {
+
+        
         $CI = & get_instance();
+        /*
         if ($CI->lightopenid->validate() && strpos($CI->lightopenid->claimed_id, 'https://www.claveunica.cl/') === 0) {
             $atributos = $CI->lightopenid->getAttributes();
             $usuario = Doctrine::getTable('Usuario')->findOneByUsuarioAndOpenId($CI->lightopenid->claimed_id, 1);
@@ -114,9 +120,25 @@ class UsuarioSesion {
             $CI->session->set_userdata('usuario_id', $usuario->id);
             self::$user = $usuario;
         }
+        */
+        $rut = $CI->session->flashdata('rut') ? $CI->session->flashdata('rut') : $CI->session->userdata('usuario_rut');
+        $usuario = Doctrine::getTable('Usuario')->findOneByRutAndOpenId($rut, 1);
+        if (!$usuario) {
+            $usuario = new Usuario();
+            $usuario->usuario = $rut;
+            $usuario->registrado = 1;
+            $usuario->open_id = 1;
+        }
+        $usuario->rut = $rut;
+        $usuario->save();
+        $CI->session->set_userdata('usuario_id', $usuario->id);
+        $CI->session->set_userdata('usuario_rut', $usuario->rut);
+        $CI->session->set_userdata('usuario_login',1);
+        self::$user = $usuario;
     }
 
     public static function logout() {
+        setcookie('redirectlogin', '', time()-3600);
         $CI = & get_instance();
         self::$user = NULL;
         $CI->session->unset_userdata('usuario_id');

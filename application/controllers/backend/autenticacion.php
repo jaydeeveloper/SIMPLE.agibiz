@@ -37,6 +37,7 @@ class Autenticacion extends MY_BackendController {
     }
 
     public function olvido_form() {
+
         $this->form_validation->set_rules('email', 'E-Mail', 'required|callback_check_usuario_existe');
 
         $respuesta=new stdClass();
@@ -87,7 +88,7 @@ class Autenticacion extends MY_BackendController {
         $usuario_input=new UsuarioBackend();
         $usuario_input->reset_token=$reset_token;
         
-        if($usuario->reset_token!=$usuario_input->reset_token){
+        if($usuario->reset_token!=$usuario_input->reset_token or is_array($reset_token)){
             echo 'Token incorrecto';
             exit;
         }
@@ -115,7 +116,7 @@ class Autenticacion extends MY_BackendController {
         $usuario_input=new UsuarioBackend();
         $usuario_input->reset_token=$reset_token;
         
-        if($usuario->reset_token!=$usuario_input->reset_token){
+        if($usuario->reset_token!=$usuario_input->reset_token or is_array($reset_token)){
             echo 'Token incorrecto';
             exit;
         }
@@ -165,7 +166,7 @@ class Autenticacion extends MY_BackendController {
         if ($usuario){
             $cuenta = Cuenta::cuentaSegunDominio();
 
-            if($usuario->cuenta->id == $cuenta->id)
+            if($usuario->Cuenta->id == $cuenta->id)
                 return TRUE;
         }
 

@@ -41,15 +41,18 @@ class Cron extends CI_Controller {
                 
                 if ($dias_por_vencer <= $e->Tarea->vencimiento_notificar_dias){
                     echo 'Enviando correo de notificacion para etapa ' . $e->id . "\n";
-                    
-                    $cuenta=$e->Tramite->Proceso->Cuenta;
+                    $varurl = site_url('etapas/ejecutar/' .$e->id);
+                    $varurl = str_replace("..", ".", $varurl);
+
+
+                    $cuenta=$e->Tramite->Proceso->Cuenta; 
                     $this->email->from($cuenta->nombre.'@'.$this->config->item('main_domain'), $cuenta->nombre_largo);
                     $this->email->to($email);
                     $this->email->subject('Etapa se encuentra ' . ($dias_por_vencer>0 ?'por vencer':'vencida'));
                     $this->email->message('<p>La etapa "' . $e->Tarea->nombre . '" del proceso "'.$e->Tramite->Proceso->nombre.'" se encuentra '
                             .($dias_por_vencer>0?'a '.$dias_por_vencer. (abs($dias_por_vencer)==1?' día ':' días ') .($e->Tarea->vencimiento_habiles == 1 ? 'habiles ' : '') .
                                     'por vencer':('vencida '.($dias_por_vencer<0 ? 'hace '.abs($dias_por_vencer).(abs($dias_por_vencer)==1?' día ':' días ') : 'hoy'))).' ('.date('d/m/Y',strtotime($e->vencimiento_at)).').' . "</p><br>" . 
-                            '<p>Usuario asignado: ' . $e->Usuario->usuario .'</p>'.($dias_por_vencer > 0 ? '<p>Para realizar la etapa, hacer click en el siguiente link: '. 'http://'.$cuenta->nombre.'.'.$this->config->item('main_domain').'/simple/etapas/ejecutar/'.$e->id.'</p>':''));
+                            '<p>Usuario asignado: ' . $e->Usuario->usuario .'</p>'.($dias_por_vencer > 0 ? '<p>Para realizar la etapa, hacer click en el siguiente link: '. $varurl .'</p>':''));
                     $this->email->send();
                 }
             

@@ -215,6 +215,12 @@ class Configuracion extends MY_BackendController {
             $data['usuario'] = $usuario;
         }
 
+        $data['procesos'] = Doctrine_Query::create()
+                            ->from('Proceso p, p.Cuenta c')
+                            ->where('c.id = ?',UsuarioBackendSesion::usuario()->cuenta_id)
+                            ->orderBy('p.nombre asc')
+                            ->execute();
+
         $data['title'] = 'Configuración de Usuarios';
         $data['content'] = 'backend/configuracion/backend_usuario_editar';
 
@@ -256,8 +262,8 @@ class Configuracion extends MY_BackendController {
             $usuario->apellidos =  $this->input->post('apellidos');            
             /*se agrega con el fin de cubrir la necesidad de tener un usuario con muchos roles*/
             $usuario->rol =  implode("," , $this->input->post('rol'));
-            
             $usuario->cuenta_id = UsuarioBackendSesion::usuario()->cuenta_id;
+            $usuario->procesos = $this->input->post('procesos') ? implode("," , $this->input->post('procesos')) : NULL;
             $usuario->save();
             $respuesta->validacion = TRUE;
             $respuesta->redirect = site_url('backend/configuracion/backend_usuarios');
@@ -300,6 +306,7 @@ class Configuracion extends MY_BackendController {
             $cuenta->nombre_largo=$this->input->post('nombre_largo');
             $cuenta->mensaje=$this->input->post('mensaje');
             $cuenta->logo=$this->input->post('logo');
+            $cuenta->descarga_masiva=$this->input->post('descarga_masiva');
             $cuenta->save();
 
             $respuesta->validacion = TRUE;
@@ -312,6 +319,169 @@ class Configuracion extends MY_BackendController {
         echo json_encode($respuesta);
     }
     
+    public function plantillas(){
+        $data['cuenta']=Doctrine::getTable('Cuenta')->find(UsuarioBackendSesion::usuario()->cuenta_id);
+        $data['title'] = 'Configuración Plantillas';
+        $data['content'] = 'backend/configuracion/plantillas';
+        $this->load->view('backend/template', $data);
+    }
+    
+    public function plantillas_form(){
+        $this->form_validation->set_rules('nombre_visible','Nombre Plantilla','required');
+        $this->form_validation->set_rules('nombre_plantilla', 'Archivo Plantilla', 'required');
+        $respuesta=new stdClass();
+        if ($this->form_validation->run() == TRUE) {
+            
+            $existe=Doctrine::getTable('Config')->findOneByIdparAndCuentaIdAndNombre(1,UsuarioBackendSesion::usuario()->cuenta_id,$this->input->post('nombre_plantilla'));
+            if(!$existe) {
+                $plantilla = new Config();
+                $plantilla->idpar=1;
+                $plantilla->cuenta_id=UsuarioBackendSesion::usuario()->cuenta_id;
+                $plantilla->endpoint='plantilla';
+                $plantilla->nombre_visible =$this->input->post('nombre_visible');
+                $plantilla->nombre =$this->input->post('nombre_plantilla');
+
+                $plantilla->save();
+            } else {
+                $existe->nombre_visible =$this->input->post('nombre_visible');
+                $existe->nombre =$this->input->post('nombre_plantilla');
+                $existe->save();   
+            }
+            $respuesta->validacion = TRUE;
+            $respuesta->redirect = site_url('backend/configuracion/plantilla_seleccion');
+         }else {
+            $respuesta->validacion = FALSE;
+            $respuesta->errores = validation_errors();
+        }
+       echo json_encode($respuesta);
+    }
+
+    public function plantilla_seleccion($plantilla_id=''){    
+        if ($plantilla_id!=''){
+            if ($plantilla_id!=1) {
+                $cuenta_id = UsuarioBackendSesion::usuario()->cuenta_id;
+                $cuentahasconfig = Doctrine::getTable('CuentaHasConfig')->findOneByIdparAndCuentaId(1,$cuenta_id);
+                    if ($cuentahasconfig==FALSE){
+                        $ctahascfg = new cuentahasconfig();
+                        $ctahascfg->idpar = 1;
+                        $ctahascfg->config_id = $plantilla_id;
+                        $cuenta_id=UsuarioBackendSesion::usuario()->cuenta_id;
+                        $ctahascfg->cuenta_id = $cuenta_id;
+                        $ctahascfg->save();   
+                       
+                    } else { 
+                        $cuentahasconfig->config_id = $plantilla_id;
+                        $cuenta_id=UsuarioBackendSesion::usuario()->cuenta_id;
+                        $cuentahasconfig->cuenta_id = $cuenta_id;
+                        $cuentahasconfig->save();   
+                    }
+            } else 
+            {
+                $cuenta_id = UsuarioBackendSesion::usuario()->cuenta_id;
+                $cuentahasconfig = Doctrine::getTable('CuentaHasConfig')->findByIdparAndCuentaId(1,$cuenta_id);
+                $cuentahasconfig->delete();
+            }
+
+        }
+            $data['config_id'] =  $plantilla_id;
+            $cuenta_id=UsuarioBackendSesion::usuario()->cuenta_id;
+            $data['config']=Doctrine::getTable('Config')->findByIdparAndCuentaIdOrCuentaId(1,$cuenta_id,0);
+            $data['title'] = 'Selección de Plantilla';
+            $data['content'] = 'backend/configuracion/plantillas_seleccion';
+            $this->load->view('backend/template', $data);     
+    }
+
+    public function plantilla_eliminar($plantilla_id=''){
+        if (!$plantilla_id==''){
+            $cuenta_id = UsuarioBackendSesion::usuario()->cuenta_id;   
+            //busco plantilla por defecto 
+            $config=Doctrine::getTable('Config')->findOneByIdparAndNombre(1,'default');
+            $id_default=$config->id;
+            $idpar_default=$config->idpar;  
+
+            //Busco Id de Plantilla a eliminar, almaceno valores a eliminar
+            $cuentahasconfig = Doctrine::getTable('CuentaHasConfig')->findOneByIdparAndConfigIdAndCuentaId(1,$plantilla_id,$cuenta_id);
+            $config=Doctrine::getTable('Config')->findOneByIdAndIdpar($plantilla_id,1);
+            $nombre_eliminar = $config->nombre;
+            $config->delete();
+            
+            if (!$cuentahasconfig === FALSE){ 
+                $cuentahasconfig->idpar = $idpar_default;
+                $cuentahasconfig->config_id = $id_default;
+                $cuentahasconfig->cuenta_id = UsuarioBackendSesion::usuario()->cuenta_id;
+                $cuentahasconfig->save();   
+            }
+            $source = 'uploads/themes/'.$cuenta_id.'/'. $nombre_eliminar . '/';
+            $filedestino = 'application/views/themes/'.$cuenta_id.'/'. $nombre_eliminar . '/';
+            $this->load->helper("file");
+            delete_files($source, true);
+            delete_files($filedestino, true);
+            rmdir($source);
+            rmdir($filedestino);
+        }
+            
+        $cuenta_id=UsuarioBackendSesion::usuario()->cuenta_id;
+        $data['config']=Doctrine::getTable('Config')->findByIdparAndCuentaIdOrCuentaId(1,$cuenta_id,0);
+        $cuentahasconfig = Doctrine::getTable('CuentaHasConfig')->findOneByIdparAndCuentaId(1,UsuarioBackendSesion::usuario()->cuenta_id);
+        $data['config_id'] = 1;
+        if ($cuentahasconfig){
+            $data['config_id'] = $cuentahasconfig->config_id;
+        }    
+
+        $data['title'] = 'Selección de Plantilla';
+        $data['content'] = 'backend/configuracion/plantillas_seleccion';
+        $this->load->view('backend/template', $data);
+        
+    }
+
+    //public function modelador(){
+      //  $data['cuenta']=Doctrine::getTable('Cuenta')->find(UsuarioBackendSesion::usuario()->cuenta_id);
+        //print_r($data['cuenta']);
+        //exit;
+      //  $data['title'] = 'Configuración Modelador';
+      //  $data['content'] = 'backend/configuracion/modelador';
+      //  $this->load->view('backend/template', $data);
+  //  }
+
+    public function modelador($conector_id=''){
+        if (!$conector_id==''){
+            $cuenta_id = UsuarioBackendSesion::usuario()->cuenta_id;
+            $cuentahasconfig = Doctrine::getTable('CuentaHasConfig')->findOneByIdparAndCuentaId(2,$cuenta_id);
+            if ($cuentahasconfig==FALSE){
+                $ctahascfg = new cuentahasconfig();
+                $ctahascfg->idpar = 2;
+                $ctahascfg->config_id = $conector_id;
+                $ctahascfg->cuenta_id = $cuenta_id;
+                $ctahascfg->save();   
+               
+            } else { 
+                $cuentahasconfig->config_id = $conector_id;
+                $cuentahasconfig->cuenta_id = UsuarioBackendSesion::usuario()->cuenta_id;
+                $cuentahasconfig->save();   
+            }
+
+            $data['config_id'] =  $conector_id;
+            $data['config']=Doctrine::getTable('Config')->findByIdpar(2);
+            $data['title'] = 'Selección de Conector';
+            $data['content'] = 'backend/configuracion/modelador';
+            $this->load->view('backend/template', $data);    
+        } else {
+            
+            $data['config']=Doctrine::getTable('Config')->findByIdpar(2);
+            $cuentahasconfig = Doctrine::getTable('CuentaHasConfig')->findOneByIdparAndCuentaId(2,UsuarioBackendSesion::usuario()->cuenta_id);
+            $data['config_id'] = 2;
+            if ($cuentahasconfig){
+                $data['config_id'] = $cuentahasconfig->config_id;
+            }    
+
+            $data['title'] = 'Selección de Conector';
+            $data['content'] = 'backend/configuracion/modelador';
+            $this->load->view('backend/template', $data);
+        }
+    }
+
+
+
     function check_existe_usuario($email){
         $u=Doctrine::getTable('Usuario')->findOneByUsuario($email);
         if(!$u)
@@ -363,6 +533,8 @@ class Configuracion extends MY_BackendController {
         echo json_encode($usuarios->toArray());
 
     }
+
+
 
 
 }

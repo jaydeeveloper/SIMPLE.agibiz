@@ -33,13 +33,19 @@
 		</tr>
 	</thead>
 	<tbody>
+		
         <?php foreach($procesos as $p): ?>
+        <?php  if(is_null((UsuarioBackendSesion::usuario()->procesos))): ?>
         <tr>
 			<td><?=$p->nombre?></td>
-			<td><a class="btn btn-primary"
-				href="<?=site_url('backend/seguimiento/index_proceso/'.$p->id)?>"><i
-					class="icon-eye-open icon-white"></i> Ver seguimiento</a></td>
+			<td><a class="btn btn-primary" href="<?=site_url('backend/seguimiento/index_proceso/'.$p->id)?>"><i class="icon-eye-open icon-white"></i> Ver seguimiento</a></td>
 		</tr>
+        <?php elseif( in_array( $p->id,explode(',',UsuarioBackendSesion::usuario()->procesos))): ?>
+        <tr>
+			<td><?=$p->nombre?></td>
+			<td><a class="btn btn-primary" href="<?=site_url('backend/seguimiento/index_proceso/'.$p->id)?>"><i class="icon-eye-open icon-white"></i> Ver seguimiento</a></td>
+		</tr>	
+		<?php endif; ?>
         <?php endforeach; ?>
     </tbody>
 </table>

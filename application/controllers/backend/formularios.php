@@ -298,7 +298,40 @@ class Formularios extends MY_BackendController {
     function clean_validacion($validacion){
         return preg_replace('/\|\s*$/','',$validacion);
     }
+    
+    public function exportar($formulario_id)
+    {
 
+        $formulario = Doctrine::getTable('Formulario')->find($formulario_id);
+
+        $json = $formulario->exportComplete();
+
+        header("Content-Disposition: attachment; filename=\"".mb_convert_case(str_replace(' ','-',$formulario->nombre),MB_CASE_LOWER).".simple\"");
+        header('Content-Type: application/json');
+        echo $json;
+
+    }
+    
+    public function importar()
+    {
+        try {
+            $file_path = $_FILES['archivo']['tmp_name'];
+            $proceso_id = $this->input->post('proceso_id');
+
+            if ($file_path && $proceso_id) {
+                $input = file_get_contents($_FILES['archivo']['tmp_name']);
+                $formulario = Formulario::importComplete($input, $proceso_id);
+                $formulario->proceso_id = $proceso_id;            
+                $formulario->save();            
+            } else {
+                die('No se especificó archivo o ID proceso');
+            }
+        } catch (Exception $ex) {
+            die('Código: '.$ex->getCode().' Mensaje: '.$ex->getMessage());
+        }
+        
+        redirect($_SERVER['HTTP_REFERER']);
+    }
 }
 
 /* End of file welcome.php */

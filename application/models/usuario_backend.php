@@ -12,6 +12,7 @@ class UsuarioBackend extends Doctrine_Record {
         $this->hasColumn('salt');
         $this->hasColumn('cuenta_id');
         $this->hasColumn('reset_token');
+        $this->hasColumn('procesos');
     }
 
     function setUp() {

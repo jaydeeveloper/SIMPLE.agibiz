@@ -55,6 +55,36 @@ class Accion extends Doctrine_Record {
     public function getExtra(){
         return json_decode($this->_get('extra'));
     }
+    
+    public function exportComplete()
+    {        
+        $accion = $this;                
+        $object = $accion->toArray();
 
+        return json_encode($object);
+    }
+    
+    /**
+     * @param $input
+     * @return Accion
+     */
+    public static function importComplete($input)
+    {
+        $json = json_decode($input);
+        $accion = new Accion();
+        
+        try {
+            
+            //Asignamos los valores a las propiedades de la Accion
+            foreach ($json as $keyp => $p_attr) {
+                if ($keyp != 'id' && $keyp != 'proceso_id')
+                    $accion->{$keyp} = $p_attr;
+            }
+        } catch (Exception $ex) {
+            throw new Exception($ex->getMessage(), $ex->getCode());
+        }                
+
+        return $accion;
+    }
 
 }

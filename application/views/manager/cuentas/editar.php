@@ -28,6 +28,7 @@
                 }
             });
         </script>
+        </br></br>
         <div class="form-actions">
             <button class="btn btn-primary" type="submit">Guardar</button>
             <a class="btn" href="<?= site_url('manager/cuentas') ?>">Cancelar</a>

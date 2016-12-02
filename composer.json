@@ -1,0 +1,5 @@
+{
+    "require": {
+        "ivan-novakov/php-openid-connect-client": "dev-master"
+    }
+}
